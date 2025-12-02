@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <title>Super Mega Hub - Spil & Apps</title>
 <style>
-body { font-family: Arial; text-align: center; margin: 20px; background: #f0f0f0; }
+body { font-family: Arial; text-align: center; margin: 20px; background: #f0f0f0; transition: background 0.5s;}
 h1 { color: #333; }
 select, button { padding: 10px 20px; margin: 10px; font-size: 16px; cursor: pointer; }
 button:hover { background: #ffcc00; }
-#output { margin-top: 20px; min-height: 150px; border: 2px solid #ccc; padding: 20px; background: #fff; border-radius: 10px; }
-.confetti { position: absolute; width: 10px; height: 10px; background: red; animation: fall 2s linear infinite; }
+#output { margin-top: 20px; min-height: 300px; border: 2px solid #ccc; padding: 20px; background: #fff; border-radius: 10px; position: relative; overflow: hidden;}
+.confetti { position: absolute; width: 10px; height: 10px; background: red; animation: fall 2s linear forwards; }
 @keyframes fall { 0% {transform: translateY(0);} 100% {transform: translateY(500px);} }
 </style>
 </head>
@@ -31,26 +31,68 @@ button:hover { background: #ffcc00; }
 <button onclick="startApp()">Start / Reset</button>
 
 <script>
-// ======== Modular Hub Structure ========
+// ================= Modular Structure =================
 
-// Placeholder objects for 100+ spil and 100+ apps
+// Example subset of 10 games (add 90+ more in same structure)
 const spil = {
-    "Terningkast": function(){
+    "Terningkast": function(){ 
         const dice = Math.floor(Math.random()*6)+1;
         document.getElementById("output").textContent = `🎲 Du slog: ${dice}`;
+        launchConfetti();
     },
-    "Møntkast": function(){
+    "Møntkast": function(){ 
         const flip = Math.random() < 0.5 ? "Plat" : "Krone";
         document.getElementById("output").textContent = `🪙 ${flip}`;
+        launchConfetti();
     },
-    "TicTacToe": function(){
-        document.getElementById("output").textContent = "Tic-Tac-Toe spil starter her... (tilføj spil logik)";
+    "TicTacToe": function(){ 
+        document.getElementById("output").textContent = "Tic-Tac-Toe starter her...";
     },
-    // ... tilføj 97+ spil her
+    "Memory": function(){
+        document.getElementById("output").textContent = "Memory spil starter...";
+    },
+    "Emoji Generator": function(){
+        const emojis = ["😀","😂","😎","🤩","🥳","😇","🤯"];
+        let e = "";
+        for(let i=0;i<10;i++) e += emojis[Math.floor(Math.random()*emojis.length)]+" ";
+        document.getElementById("output").textContent = `Dine emojis: ${e}`;
+    },
+    "Click Speed Test": function(){
+        let count = 0;
+        document.getElementById("output").innerHTML = "Klik hurtigst muligt i 5 sekunder!<br><button id='clickBtn'>Klik her!</button>";
+        const btn = document.getElementById("clickBtn");
+        const start = Date.now();
+        btn.onclick = function(){
+            count++;
+            if(Date.now()-start>5000){
+                btn.disabled = true;
+                document.getElementById("output").textContent = `Tid slut! Du klikkede ${count} gange.`;
+            }
+        }
+    },
+    "Ballon Pop": function(){
+        document.getElementById("output").textContent = "Ballon Pop spil starter...";
+    },
+    "Word Scramble": function(){
+        document.getElementById("output").textContent = "Word Scramble starter...";
+    },
+    "Number Guess": function(){
+        const num = Math.floor(Math.random()*100)+1;
+        const guess = parseInt(prompt("Gæt et tal mellem 1-100:"));
+        document.getElementById("output").textContent = guess===num ? "Tillykke! Du gættede rigtigt!" : `Forkert! Det rigtige tal var ${num}`;
+    },
+    "Color Match": function(){
+        const colors = ["rød","blå","grøn","gul","lilla"];
+        const c = colors[Math.floor(Math.random()*colors.length)];
+        document.getElementById("output").textContent = `Farve: ${c}`;
+        document.body.style.backgroundColor = c;
+    },
+    // ...add 90+ more
 };
 
+// Example subset of 10 apps (add 90+ more in same structure)
 const apps = {
-    "Lommeregner": function(){
+    "Lommeregner": function(){ 
         const result = prompt("Indtast et udtryk f.eks. 2+2:");
         try { document.getElementById("output").textContent = `Resultat: ${eval(result)}`; }
         catch { document.getElementById("output").textContent = "Ugyldigt udtryk!"; }
@@ -67,10 +109,17 @@ const apps = {
         const total = (beløb + beløb*tip/100).toFixed(2);
         document.getElementById("output").textContent = `Total beløb: ${total}`;
     },
-    // ... tilføj 97+ apps her
+    "Enhedsconverter": function(){ document.getElementById("output").textContent="Enhedsconverter starter..."; },
+    "QR Kode Generator": function(){ document.getElementById("output").textContent="QR Generator starter..."; },
+    "Ord Tæller": function(){ document.getElementById("output").textContent="Ord Tæller starter..."; },
+    "Noter": function(){ document.getElementById("output").textContent="Noter app starter..."; },
+    "Stopur": function(){ document.getElementById("output").textContent="Stopur starter..."; },
+    "Countdown Timer": function(){ document.getElementById("output").textContent="Countdown starter..."; },
+    "Farvevælger": function(){ document.getElementById("output").textContent="Farvevælger starter..."; },
+    // ...add 90+ more
 };
 
-// ======== Populate selection dropdown ========
+// ================= Populate selection dropdown =================
 function loadSelection(){
     const category = document.getElementById("category").value;
     const select = document.getElementById("selection");
@@ -84,37 +133,44 @@ function loadSelection(){
     }
 }
 
-// ======== Start / Reset selected app/spil ========
+// ================= Start / Reset selected app/spil =================
 function startApp(){
     const category = document.getElementById("category").value;
     const selection = document.getElementById("selection").value;
     const items = category === "spil" ? spil : apps;
     if(items[selection]) items[selection]();
-    // Optional: simple confetti effect for fun
     launchConfetti();
+    sendHeight();
 }
 
-// ======== Simple confetti animation ========
+// ================= Confetti effect =================
 function launchConfetti(){
-    for(let i=0;i<30;i++){
+    for(let i=0;i<20;i++){
         const confetti = document.createElement("div");
-        confetti.className = "confetti";
-        confetti.style.background = getRandomColor();
-        confetti.style.left = Math.random()*window.innerWidth+"px";
+        confetti.className="confetti";
+        confetti.style.background=getRandomColor();
+        confetti.style.left=Math.random()*window.innerWidth+"px";
         document.body.appendChild(confetti);
         setTimeout(()=>confetti.remove(),2000);
     }
 }
-
 function getRandomColor(){
-    const letters = "0123456789ABCDEF";
-    let color = "#";
-    for(let i=0;i<6;i++) color += letters[Math.floor(Math.random()*16)];
+    const letters="0123456789ABCDEF";
+    let color="#";
+    for(let i=0;i<6;i++) color+=letters[Math.floor(Math.random()*16)];
     return color;
+}
+
+// ================= Auto-resize for iframe =================
+function sendHeight(){
+    const height = document.body.scrollHeight;
+    if(window.parent) window.parent.postMessage(height,"*");
 }
 
 // Initialize dropdown
 loadSelection();
+window.onload = sendHeight;
+window.onresize = sendHeight;
 </script>
 
 </body>
