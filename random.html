@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Random Generator</title>
+</head>
+<body style="font-family:Arial;font-size:20px;">
+
+<div id="output"></div>
+
+<button onclick="generate()" style="padding:10px 20px;font-size:16px;margin-top:10px;">
+Generate Random Number
+</button>
+
+<script>
+function generate() {
+    const min = 1000;
+    const max = 9999;
+    const n = Math.floor(Math.random() * (max - min + 1)) + min;
+    document.getElementById("output").textContent = n;
+}
+</script>
+
+</body>
+</html>
