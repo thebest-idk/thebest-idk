@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Sjove Mini-Spil</title>
+<style>
+body { font-family: Arial; text-align: center; font-size: 20px; margin: 30px; }
+button { padding: 10px 20px; font-size: 16px; margin-top: 10px; }
+#output { margin-top: 20px; min-height: 50px; }
+</style>
+</head>
+<body>
+
+<h1>Sjove Mini-Spil</h1>
+
+<label for="game">Vælg spil:</label>
+<select id="game" onchange="resetGame()">
+    <option value="letters">Tilfældige bogstaver</option>
+    <option value="dice">Terningkast</option>
+    <option value="coin">Møntkast</option>
+    <option value="color">Tilfældig farve</option>
+    <option value="quote">Tilfældig citat</option>
+</select>
+
+<div id="output"></div>
+
+<button onclick="generate()">Start</button>
+
+<script>
+const quotes = [
+    "Tro på dig selv!",
+    "Du kan gøre det!",
+    "Forbliv positiv!",
+    "Bliv ved med at lære!"
+];
+
+function resetGame() {
+    document.getElementById("output").textContent = "";
+}
+
+function generate() {
+    const game = document.getElementById("game").value;
+    let output = "";
+    
+    if(game === "letters") {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ0123456789";
+        let result = "";
+        for(let i=0; i<6; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        output = `Tilfældige bogstaver: ${result}`;
+    }
+    else if(game === "dice") {
+        const dice = Math.floor(Math.random() * 6) + 1;
+        output = `🎲 Du slog: ${dice}`;
+    }
+    else if(game === "coin") {
+        const flip = Math.random() < 0.5 ? "Plat" : "Krone";
+        output = `🪙 ${flip}`;
+    }
+    else if(game === "color") {
+        const color = '#' + Math.floor(Math.random()*16777215).toString(16);
+        document.body.style.backgroundColor = color;
+        output = `Tilfældig farve: ${color}`;
+    }
+    else if(game === "quote") {
+        const q = quotes[Math.floor(Math.random() * quotes.length)];
+        output = `Citat: ${q}`;
+    }
+    
+    document.getElementById("output").textContent = output;
+}
+</script>
+
+</body>
+</html>
