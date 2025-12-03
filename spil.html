@@ -2,170 +2,170 @@
 <html lang="da">
 <head>
 <meta charset="UTF-8">
-<title>Super Mega Hub - Spil & Apps</title>
+<title>Super Hub – Spil & Apps</title>
+
 <style>
-body { font-family: Arial; text-align: center; margin: 20px; background: #f0f0f0; transition: background 0.5s; }
-h1 { color: #333; }
-select, button { padding: 10px 20px; margin: 10px; font-size: 16px; cursor: pointer; }
-button:hover { background: #ffcc00; }
-#output { margin-top: 20px; min-height: 300px; border: 2px solid #ccc; padding: 20px; background: #fff; border-radius: 10px; position: relative; overflow: hidden;}
-.confetti { position: absolute; width: 10px; height: 10px; background: red; animation: fall 2s linear forwards; }
-@keyframes fall { 0% {transform: translateY(0);} 100% {transform: translateY(500px);} }
+body {
+    font-family: Arial;
+    background: #eef2f7;
+    text-align: center;
+    margin: 20px;
+}
+#output {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+    min-height: 250px;
+    font-size: 18px;
+    box-shadow: 0 0 10px #0002;
+}
+button, select {
+    padding: 10px 20px;
+    font-size: 16px;
+    margin: 10px;
+}
 </style>
 </head>
 <body>
 
-<h1>Super Mega Hub - Spil & Apps</h1>
+<h1>🎮 Super Hub – Spil & Apps</h1>
 
-<label for="category">Vælg kategori:</label>
-<select id="category" onchange="loadSelection()">
+<select id="category" onchange="updateList()">
     <option value="spil">Spil</option>
     <option value="apps">Apps</option>
 </select>
 
-<label for="selection">Vælg spil/app:</label>
-<select id="selection"></select>
+<select id="item"></select>
+
+<button onclick="runItem()">Start</button>
 
 <div id="output"></div>
 
-<button onclick="startApp()">Start / Reset</button>
-
 <script>
-// ====== Games ======
-const spil = {
-    "Terningkast": function(){ 
-        const dice = Math.floor(Math.random()*6)+1;
-        document.getElementById("output").textContent = `🎲 Du slog: ${dice}`;
-        launchConfetti();
+
+// -------- REAL WORKING GAMES --------
+const games = {
+
+    // 1 — Dice
+    "Terningkast": () => {
+        const d = Math.floor(Math.random()*6)+1;
+        output.innerHTML = `🎲 Du slog: <b>${d}</b>`;
     },
-    "Møntkast": function(){ 
-        const flip = Math.random() < 0.5 ? "Plat" : "Krone";
-        document.getElementById("output").textContent = `🪙 ${flip}`;
-        launchConfetti();
+
+    // 2 — Coin flip
+    "Møntkast": () => {
+        const r = Math.random() < 0.5 ? "Plat" : "Krone";
+        output.innerHTML = `🪙 Resultat: <b>${r}</b>`;
     },
-    "TicTacToe": function(){ 
-        document.getElementById("output").innerHTML = "Tic-Tac-Toe starter...<br>Ikke implementeret fuldt endnu.";
+
+    // 3 — Click speed
+    "Klik-hastighed": () => {
+        let score = 0;
+        output.innerHTML = `
+            Klik så mange gange som muligt på 3 sekunder!<br><br>
+            <button id="clicker">KLIK!</button>
+        `;
+        let btn = document.getElementById("clicker");
+
+        let end = Date.now() + 3000;
+        btn.onclick = () => {
+            if (Date.now() > end) return;
+            score++;
+        };
+
+        setTimeout(() => {
+            output.innerHTML = `⏱️ Tid slut!<br>Resultat: <b>${score}</b>`;
+        }, 3000);
     },
-    "Memory": function(){
-        document.getElementById("output").innerHTML = "Memory starter...<br>Ikke implementeret fuldt endnu.";
+
+    // 4 — Emoji generator
+    "Emoji generator": () => {
+        const emojis = ["😀","😂","😎","🤩","😡","🥶","🤯","😇"];
+        let list = "";
+        for (let i = 0; i < 10; i++)
+            list += emojis[Math.floor(Math.random()*emojis.length)] + " ";
+        output.innerHTML = list;
     },
-    "Emoji Generator": function(){
-        const emojis = ["😀","😂","😎","🤩","🥳","😇","🤯"];
-        let e = "";
-        for(let i=0;i<10;i++) e += emojis[Math.floor(Math.random()*emojis.length)]+" ";
-        document.getElementById("output").textContent = `Dine emojis: ${e}`;
-        launchConfetti();
-    },
-    "Click Speed Test": function(){
-        let count = 0;
-        document.getElementById("output").innerHTML = "Klik hurtigst muligt i 5 sekunder!<br><button id='clickBtn'>Klik her!</button>";
-        const btn = document.getElementById("clickBtn");
-        const start = Date.now();
-        btn.onclick = function(){
-            count++;
-            if(Date.now()-start>5000){
-                btn.disabled = true;
-                document.getElementById("output").textContent = `Tid slut! Du klikkede ${count} gange.`;
-                launchConfetti();
-            }
+
+    // 5 — Number guess
+    "Gæt et tal": () => {
+        const num = Math.floor(Math.random()*50)+1;
+        const guess = prompt("Gæt et tal mellem 1 og 50:");
+        if (!guess) return;
+        output.innerHTML =
+            guess == num ?
+            "🎉 Rigtigt!" :
+            `❌ Forkert — det rigtige tal var <b>${num}</b>`;
+    }
+};
+
+// -------- REAL WORKING APPS --------
+const apps = {
+
+    "Lommeregner": () => {
+        let expr = prompt("Indtast udtryk (fx 5+5):");
+        try {
+            output.innerHTML = `Resultat: <b>${eval(expr)}</b>`;
+        } catch {
+            output.innerHTML = "Ugyldigt udtryk!";
         }
     },
-    "Number Guess": function(){
-        const num = Math.floor(Math.random()*100)+1;
-        const guess = parseInt(prompt("Gæt et tal mellem 1-100:"));
-        document.getElementById("output").textContent = guess===num ? "Tillykke! Du gættede rigtigt!" : `Forkert! Det rigtige tal var ${num}`;
-        launchConfetti();
+
+    "BMI beregner": () => {
+        let h = parseFloat(prompt("Højde i meter:"));
+        let v = parseFloat(prompt("Vægt i kg:"));
+        if (!h || !v) return;
+        let bmi = (v / (h*h)).toFixed(1);
+        output.innerHTML = `Din BMI: <b>${bmi}</b>`;
     },
-    "Word Scramble": function(){
-        const words = ["danmark","spil","computer","kode","jotform"];
-        const word = words[Math.floor(Math.random()*words.length)];
-        const scrambled = word.split('').sort(()=>0.5-Math.random()).join('');
-        document.getElementById("output").textContent = `Sorter ordet: ${scrambled}`;
+
+    "Ord tæller": () => {
+        let text = prompt("Indsæt tekst:");
+        if (!text) return;
+        let w = text.trim().split(/\s+/).length;
+        output.innerHTML = `Ord: <b>${w}</b>`;
     },
-    "Ballon Pop": function(){
-        document.getElementById("output").textContent = "Ballon Pop starter... Klik for at poppe!";
-        document.getElementById("output").onclick = function(){ document.getElementById("output").textContent="Boom! 🎈"; launchConfetti(); };
+
+    "Tilfældig farve": () => {
+        const c = "#" + Math.floor(Math.random()*16777215).toString(16);
+        output.innerHTML = `Farve: <b>${c}</b>`;
+        document.body.style.background = c;
     },
-    "Color Match": function(){
-        const colors = ["rød","blå","grøn","gul","lilla"];
-        const c = colors[Math.floor(Math.random()*colors.length)];
-        document.getElementById("output").textContent = `Farve: ${c}`;
-        document.body.style.backgroundColor = c;
-        launchConfetti();
+
+    "Stopur": () => {
+        output.innerHTML = "Stopur startede...";
+        let start = Date.now();
+        setTimeout(() => {
+            let sec = ((Date.now()-start)/1000).toFixed(2);
+            output.innerHTML = `Tid: <b>${sec} sek</b>`;
+        }, 3000);
     }
 };
 
-// ====== Apps ======
-const apps = {
-    "Lommeregner": function(){ 
-        const result = prompt("Indtast et udtryk f.eks. 2+2:");
-        try { document.getElementById("output").textContent = `Resultat: ${eval(result)}`; }
-        catch { document.getElementById("output").textContent = "Ugyldigt udtryk!"; }
-    },
-    "BMI Beregner": function(){
-        const højde = parseFloat(prompt("Indtast højde i meter:"));
-        const vægt = parseFloat(prompt("Indtast vægt i kg:"));
-        const bmi = (vægt / (højde*højde)).toFixed(2);
-        document.getElementById("output").textContent = `Din BMI: ${bmi}`;
-    },
-    "Tip Beregner": function(){
-        const beløb = parseFloat(prompt("Indtast beløb:"));
-        const tip = parseFloat(prompt("Indtast tip %:"));
-        const total = (beløb + beløb*tip/100).toFixed(2);
-        document.getElementById("output").textContent = `Total beløb: ${total}`;
-    },
-    "Enhedsconverter": function(){ document.getElementById("output").textContent="Enhedsconverter starter..."; },
-    "QR Kode Generator": function(){ document.getElementById("output").textContent="QR Generator starter..."; },
-    "Ord Tæller": function(){ document.getElementById("output").textContent="Ord Tæller starter..."; },
-    "Noter": function(){ document.getElementById("output").textContent="Noter app starter..."; },
-    "Stopur": function(){ document.getElementById("output").textContent="Stopur starter..."; },
-    "Countdown Timer": function(){ document.getElementById("output").textContent="Countdown starter..."; },
-    "Farvevælger": function(){ document.getElementById("output").textContent="Farvevælger starter..."; }
-};
+// -------- ENGINE --------
 
-// ====== Populate selection dropdown ======
-function loadSelection(){
-    const category = document.getElementById("category").value;
-    const select = document.getElementById("selection");
-    select.innerHTML = "";
-    const items = category==="spil"?spil:apps;
-    for(let key in items){
-        const opt=document.createElement("option");
-        opt.value=key;
-        opt.textContent=key;
-        select.appendChild(opt);
-    }
+function updateList() {
+    let cat = category.value;
+    let source = cat === "spil" ? games : apps;
+    item.innerHTML = "";
+    Object.keys(source).forEach(name => {
+        let op = document.createElement("option");
+        op.value = name;
+        op.textContent = name;
+        item.appendChild(op);
+    });
+}
+updateList();
+
+function runItem() {
+    let cat = category.value;
+    let name = item.value;
+    let source = cat === "spil" ? games : apps;
+    output.innerHTML = "";
+    source[name]();
 }
 
-// ====== Start / Reset selected app/spil ======
-function startApp(){
-    const category = document.getElementById("category").value;
-    const selection = document.getElementById("selection").value;
-    const items = category==="spil"?spil:apps;
-    if(items[selection]) items[selection]();
-}
-
-// ====== Confetti effect ======
-function launchConfetti(){
-    for(let i=0;i<20;i++){
-        const confetti=document.createElement("div");
-        confetti.className="confetti";
-        confetti.style.background=getRandomColor();
-        confetti.style.left=Math.random()*window.innerWidth+"px";
-        document.body.appendChild(confetti);
-        setTimeout(()=>confetti.remove(),2000);
-    }
-}
-function getRandomColor(){
-    const letters="0123456789ABCDEF";
-    let color="#";
-    for(let i=0;i<6;i++) color+=letters[Math.floor(Math.random()*16)];
-    return color;
-}
-
-// Initialize
-loadSelection();
 </script>
-
 </body>
 </html>
