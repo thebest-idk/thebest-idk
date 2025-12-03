@@ -2,170 +2,299 @@
 <html lang="da">
 <head>
 <meta charset="UTF-8">
-<title>Super Hub – Spil & Apps</title>
-
+<title>Spil & Apps</title>
 <style>
-body {
-    font-family: Arial;
-    background: #eef2f7;
-    text-align: center;
-    margin: 20px;
-}
-#output {
-    background: #fff;
-    border-radius: 10px;
-    padding: 20px;
-    margin-top: 20px;
-    min-height: 250px;
-    font-size: 18px;
-    box-shadow: 0 0 10px #0002;
-}
-button, select {
-    padding: 10px 20px;
-    font-size: 16px;
-    margin: 10px;
-}
+    body { font-family: Arial; background:#f2f2f2; text-align:center; padding:20px; }
+    #output { margin-top:20px; padding:20px; background:white; min-height:150px; border-radius:10px; }
+    select, button { padding:10px; margin:5px; font-size:16px; }
 </style>
 </head>
 <body>
 
-<h1>🎮 Super Hub – Spil & Apps</h1>
+<h1>🎮 Spil & 📱 Apps</h1>
 
-<select id="category" onchange="updateList()">
-    <option value="spil">Spil</option>
-    <option value="apps">Apps</option>
+<select id="selector">
+    <option disabled selected>Vælg spil/app...</option>
 </select>
 
-<select id="item"></select>
+<button onclick="kør()">Start</button>
 
-<button onclick="runItem()">Start</button>
-
-<div id="output"></div>
+<div id="output">Vælg et spil eller en app.</div>
 
 <script>
+const output = document.getElementById("output");
 
-// -------- REAL WORKING GAMES --------
+/* -----------------------------------------------------
+   ✔ 15 GAMES
+------------------------------------------------------*/
 const games = {
 
-    // 1 — Dice
-    "Terningkast": () => {
-        const d = Math.floor(Math.random()*6)+1;
-        output.innerHTML = `🎲 Du slog: <b>${d}</b>`;
-    },
+"Terningkast": () => {
+    const d = Math.floor(Math.random()*6)+1;
+    output.innerHTML = `🎲 Du slog: <b>${d}</b>`;
+},
 
-    // 2 — Coin flip
-    "Møntkast": () => {
-        const r = Math.random() < 0.5 ? "Plat" : "Krone";
-        output.innerHTML = `🪙 Resultat: <b>${r}</b>`;
-    },
+"Møntkast": () => {
+    const r = Math.random()<0.5 ? "Plat" : "Krone";
+    output.innerHTML=`🪙 Resultat: <b>${r}</b>`;
+},
 
-    // 3 — Click speed
-    "Klik-hastighed": () => {
-        let score = 0;
-        output.innerHTML = `
-            Klik så mange gange som muligt på 3 sekunder!<br><br>
-            <button id="clicker">KLIK!</button>
-        `;
-        let btn = document.getElementById("clicker");
+"Klik-hastighed": () => {
+    let score = 0;
+    output.innerHTML=`Klik på 3 sek!<br><br><button id="c">KLIK</button>`;
+    let c=document.getElementById("c");
+    let end=Date.now()+3000;
+    c.onclick=()=>{ if(Date.now()<end) score++; };
+    setTimeout(()=>output.innerHTML=`Score: <b>${score}</b>`,3000);
+},
 
-        let end = Date.now() + 3000;
-        btn.onclick = () => {
-            if (Date.now() > end) return;
-            score++;
+"Reaktionstest": () => {
+    output.innerHTML="Vent på grøn...";
+    setTimeout(()=>{
+        output.style.background="lightgreen";
+        let start=Date.now();
+        output.onclick=()=>{
+            output.innerHTML=`Reaktion: <b>${Date.now()-start} ms</b>`;
+            output.style.background="white";
+            output.onclick=null;
         };
+    }, Math.random()*3000+1000);
+},
 
-        setTimeout(() => {
-            output.innerHTML = `⏱️ Tid slut!<br>Resultat: <b>${score}</b>`;
-        }, 3000);
-    },
+"Gæt et tal": () => {
+    let r=Math.floor(Math.random()*100)+1;
+    let g=prompt("Gæt mellem 1–100:");
+    output.innerHTML=g==r?"🎉 Rigtigt!":`❌ Det var <b>${r}</b>`;
+},
 
-    // 4 — Emoji generator
-    "Emoji generator": () => {
-        const emojis = ["😀","😂","😎","🤩","😡","🥶","🤯","😇"];
-        let list = "";
-        for (let i = 0; i < 10; i++)
-            list += emojis[Math.floor(Math.random()*emojis.length)] + " ";
-        output.innerHTML = list;
-    },
+"Ord-scramble": () => {
+    const w=["computer","danmark","kage","spil"];
+    let word=w[Math.floor(Math.random()*w.length)];
+    let s=word.split("").sort(()=>0.5-Math.random()).join("");
+    output.innerHTML=`Genskab: <b>${s}</b>`;
+},
 
-    // 5 — Number guess
-    "Gæt et tal": () => {
-        const num = Math.floor(Math.random()*50)+1;
-        const guess = prompt("Gæt et tal mellem 1 og 50:");
-        if (!guess) return;
-        output.innerHTML =
-            guess == num ?
-            "🎉 Rigtigt!" :
-            `❌ Forkert — det rigtige tal var <b>${num}</b>`;
-    }
-};
+"MatQuiz": () => {
+    let a=Math.floor(Math.random()*10);
+    let b=Math.floor(Math.random()*10);
+    let g=prompt(`Hvad er ${a}+${b}?`);
+    output.innerHTML=g==a+b?"✔ Rigtigt":"❌ Det var "+(a+b);
+},
 
-// -------- REAL WORKING APPS --------
-const apps = {
+"Ballon-pop": () => {
+    output.innerHTML=`<div id="b" style="font-size:60px;cursor:pointer;">🎈</div>`;
+    document.getElementById("b").onclick=()=>output.innerHTML="💥 Boom!";
+},
 
-    "Lommeregner": () => {
-        let expr = prompt("Indtast udtryk (fx 5+5):");
-        try {
-            output.innerHTML = `Resultat: <b>${eval(expr)}</b>`;
-        } catch {
-            output.innerHTML = "Ugyldigt udtryk!";
+"Speed-tælling": () => {
+    let n=0;
+    output.innerHTML=`Klik +1!<br><button id="u">+1</button><br><b id="v">0</b>`;
+    let v=document.getElementById("v");
+    let u=document.getElementById("u");
+    let end=Date.now()+5000;
+    u.onclick=()=>{ if(Date.now()<end) n++, v.innerHTML=n; };
+    setTimeout(()=>output.innerHTML=`Score: <b>${n}</b>`,5000);
+},
+
+"FingerTest": () => {
+    output.innerHTML="Hold fingeren!";
+    output.onmousedown=()=>output.innerHTML="Bliv ved!";
+    output.onmouseup=()=>output.innerHTML="Slip ikke!";
+},
+
+"Farvegæt": () => {
+    const farver=["rød","blå","gul","grøn"];
+    let r=farver[Math.floor(Math.random()*farver.length)];
+    output.innerHTML="Gæt farven:<br>";
+    farver.forEach(f=>{
+        let b=document.createElement("button");
+        b.textContent=f;
+        b.onclick=()=>output.innerHTML=f===r?"🎉 Rigtigt!":"❌ Forkert!";
+        output.appendChild(b);
+    });
+},
+
+"Kort klikspil": () => {
+    let s=0;
+    output.innerHTML=`Klik i 2 sek!<br><button id="k">Klik</button>`;
+    let k=document.getElementById("k");
+    let end=Date.now()+2000;
+    k.onclick=()=>{ if(Date.now()<end) s++; };
+    setTimeout(()=>output.innerHTML=`Resultat: <b>${s}</b>`,2000);
+},
+
+"Sten-Saks-Papir": () => {
+    output.innerHTML=
+    `Vælg:<br>
+    <button data="sten">🪨</button>
+    <button data="saks">✂️</button>
+    <button data="papir">📄</button>`;
+    let pc=["sten","saks","papir"][Math.floor(Math.random()*3)];
+    output.querySelectorAll("button").forEach(btn=>{
+        btn.onclick=()=>{
+            let u=btn.getAttribute("data");
+            if(u===pc) output.innerHTML="Uafgjort!";
+            else if((u=="sten"&&pc=="saks")||(u=="saks"&&pc=="papir")||(u=="papir"&&pc=="sten"))
+                output.innerHTML=`Du vandt! PC: ${pc}`;
+            else output.innerHTML=`Du tabte! PC: ${pc}`;
         }
-    },
+    });
+},
 
-    "BMI beregner": () => {
-        let h = parseFloat(prompt("Højde i meter:"));
-        let v = parseFloat(prompt("Vægt i kg:"));
-        if (!h || !v) return;
-        let bmi = (v / (h*h)).toFixed(1);
-        output.innerHTML = `Din BMI: <b>${bmi}</b>`;
-    },
+"Rækkefølgeklik": () => {
+    output.innerHTML="";
+    let n=[1,2,3,4].sort(()=>0.5-Math.random());
+    let next=1;
+    n.forEach(x=>{
+        let b=document.createElement("button");
+        b.textContent=x;
+        b.onclick=()=>{
+            if(x===next){
+                b.style.background="lightgreen";
+                next++;
+                if(next>4) output.innerHTML="🎉 Færdig!";
+            } else b.style.background="red";
+        };
+        output.appendChild(b);
+    });
+},
 
-    "Ord tæller": () => {
-        let text = prompt("Indsæt tekst:");
-        if (!text) return;
-        let w = text.trim().split(/\s+/).length;
-        output.innerHTML = `Ord: <b>${w}</b>`;
-    },
-
-    "Tilfældig farve": () => {
-        const c = "#" + Math.floor(Math.random()*16777215).toString(16);
-        output.innerHTML = `Farve: <b>${c}</b>`;
-        document.body.style.background = c;
-    },
-
-    "Stopur": () => {
-        output.innerHTML = "Stopur startede...";
-        let start = Date.now();
-        setTimeout(() => {
-            let sec = ((Date.now()-start)/1000).toFixed(2);
-            output.innerHTML = `Tid: <b>${sec} sek</b>`;
-        }, 3000);
-    }
-};
-
-// -------- ENGINE --------
-
-function updateList() {
-    let cat = category.value;
-    let source = cat === "spil" ? games : apps;
-    item.innerHTML = "";
-    Object.keys(source).forEach(name => {
-        let op = document.createElement("option");
-        op.value = name;
-        op.textContent = name;
-        item.appendChild(op);
+"Mini-Memory": () => {
+    let cards=["🙂","🙂","😡","😡"].sort(()=>0.5-Math.random());
+    let first=null;
+    output.innerHTML="";
+    cards.forEach((c)=>{
+        let b=document.createElement("button");
+        b.textContent="❓";
+        b.onclick=()=>{
+            b.textContent=c;
+            if(!first){ first={c,b}; }
+            else{
+                if(first.c!==c){
+                    setTimeout(()=>{
+                        b.textContent="❓";
+                        first.b.textContent="❓";
+                        first=null;
+                    },400);
+                } else first=null;
+            }
+        };
+        output.appendChild(b);
     });
 }
-updateList();
 
-function runItem() {
-    let cat = category.value;
-    let name = item.value;
-    let source = cat === "spil" ? games : apps;
-    output.innerHTML = "";
-    source[name]();
+};
+
+/* -----------------------------------------------------
+   ✔ 15 APPS
+------------------------------------------------------*/
+const apps = {
+
+"Lommeregner": () => {
+    let e=prompt("Indtast udtryk:");
+    try{ output.innerHTML=`Resultat: <b>${eval(e)}</b>`; }
+    catch{ output.innerHTML="Fejl i udtryk"; }
+},
+
+"BMI beregner": () => {
+    let h=parseFloat(prompt("Højde (m):"));
+    let v=parseFloat(prompt("Vægt (kg):"));
+    output.innerHTML=`BMI: <b>${(v/(h*h)).toFixed(1)}</b>`;
+},
+
+"Ord tæller": () => {
+    let t=prompt("Skriv tekst:");
+    output.innerHTML=`Ord: <b>${t.trim().split(/\s+/).length}</b>`;
+},
+
+"Uppercase": () => {
+    let t=prompt("Tekst:");
+    output.innerHTML=t.toUpperCase();
+},
+
+"Lowercase": () => {
+    let t=prompt("Tekst:");
+    output.innerHTML=t.toLowerCase();
+},
+
+"Password generator": () => {
+    let c="abcdefghijklmnopqrstuvwxyz0123456789!#€%&";
+    let p="";
+    for(let i=0;i<10;i++) p+=c[Math.floor(Math.random()*c.length)];
+    output.innerHTML=`Password:<br><b>${p}</b>`;
+},
+
+"Dato & tid": () => {
+    output.innerHTML=new Date().toLocaleString("da-DK");
+},
+
+"Meter → Centimeter": () => {
+    let m=parseFloat(prompt("Meter:"));
+    output.innerHTML=`${m} m = <b>${m*100}</b> cm`;
+},
+
+"Centimeter → Meter": () => {
+    let c=parseFloat(prompt("Centimeter:"));
+    output.innerHTML=`${c} cm = <b>${c/100}</b> m`;
+},
+
+"Noter": () => {
+    let t=prompt("Skriv noter:");
+    output.innerHTML=`<pre>${t}</pre>`;
+},
+
+"Tekst længde": () => {
+    let t=prompt("Tekst:");
+    output.innerHTML=`Længde: <b>${t.length}</b>`;
+},
+
+"Tal sortering": () => {
+    let t=prompt("Skriv tal (5,2,9)");
+    let arr=t.split(",").map(x=>parseFloat(x)).sort((a,b)=>a-b);
+    output.innerHTML=`Sorterede: <b>${arr.join(", ")}</b>`;
+},
+
+"Gennemsnit": () => {
+    let t=prompt("Tal (5,10,3):");
+    let arr=t.split(",").map(Number);
+    let avg=arr.reduce((a,b)=>a+b)/arr.length;
+    output.innerHTML=`Gennemsnit: <b>${avg}</b>`;
+},
+
+"Timer": () => {
+    let s=parseFloat(prompt("Sekunder:"));
+    output.innerHTML=`Timer sat på ${s}s`;
+    setTimeout(()=>output.innerHTML="⏰ Tiden er gået!",s*1000);
+},
+
+"Alarm": () => {
+    let m=parseFloat(prompt("Minutter:"));
+    output.innerHTML=`Alarm sat i ${m} min`;
+    setTimeout(()=>output.innerHTML="🔔 ALARM!",m*60000);
 }
 
+};
+
+/* -----------------------------------------------------
+   ✔ COMBINE INTO SELECT DROPDOWN
+------------------------------------------------------*/
+const all = {...games, ...apps};
+const sel = document.getElementById("selector");
+
+Object.keys(all).forEach(k=>{
+    let o=document.createElement("option");
+    o.value=k; o.textContent=k;
+    sel.appendChild(o);
+});
+
+/* -----------------------------------------------------
+   ✔ RUN SELECTED FEATURE
+------------------------------------------------------*/
+function kør(){
+    let v=sel.value;
+    if(all[v]) all[v]();
+}
 </script>
+
 </body>
 </html>
