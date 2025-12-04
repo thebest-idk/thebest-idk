@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Game Pack – Part 3</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body { font-family: Arial; background:#111; color:white; margin:0; padding:20px; text-align:center;}
+button { padding:10px 20px; margin:5px; border:none; border-radius:6px; cursor:pointer; background:#4caf50; color:white; font-size:18px;}
+.game-box { display:none; margin-top:20px; padding:20px; background:#222; border-radius:10px;}
+canvas { background:#000; display:block; margin:20px auto;}
+</style>
+</head>
+<body>
+<h1>🎮 GAME PACK – PART 3</h1>
+
+<!-- Menu -->
+<button onclick="showGame('reaction')">Reaction Time</button>
+<button onclick="showGame('flappy')">Flappy Box</button>
+<button onclick="showGame('dodge')">Dodge Blocks</button>
+<button onclick="showGame('pong')">Pong</button>
+
+<!-- GAME 7: REACTION TIME -->
+<div id="reaction" class="game-box">
+<h2>Reaction Time Game</h2>
+<p>Klik så hurtigt du kan, når boksen bliver grøn!</p>
+<div id="reaction-box" style="width:100px;height:100px;background:red;margin:20px auto;cursor:pointer;"></div>
+<p id="reaction-msg">Tid: 0ms</p>
+</div>
+
+<!-- GAME 8: FLAPPY BOX -->
+<div id="flappy" class="game-box">
+<h2>Flappy Box</h2>
+<canvas id="flappyCanvas" width="300" height="400"></canvas>
+<p id="flappy-score">Score: 0</p>
+</div>
+
+<!-- GAME 9: DODGE BLOCKS -->
+<div id="dodge" class="game-box">
+<h2>Dodge Blocks</h2>
+<canvas id="dodgeCanvas" width="300" height="400"></canvas>
+<p id="dodge-score">Score: 0</p>
+</div>
+
+<!-- GAME 10: PONG -->
+<div id="pong" class="game-box">
+<h2>Pong</h2>
+<canvas id="pongCanvas" width="400" height="300"></canvas>
+<p id="pong-score">Score: 0</p>
+</div>
+
+<script>
+/* SHOW GAME */
+function showGame(id){
+  document.querySelectorAll('.game-box').forEach(g=>g.style.display="none");
+  document.getElementById(id).style.display="block";
+}
+
+/* GAME 7 — REACTION TIME */
+let reactionBox=document.getElementById("reaction-box");
+let reactionStart=0;
+reactionBox.onclick=()=>{
+  if(reactionBox.style.background==="green"){
+    let t=Date.now()-reactionStart;
+    document.getElementById("reaction-msg").innerText="Tid: "+t+"ms";
+    reactionBox.style.background="red";
+    setTimeout(startReaction,Math.random()*2000+1000);
+  }
+}
+function startReaction(){ reactionBox.style.background="green"; reactionStart=Date.now();}
+setTimeout(startReaction,1000);
+
+/* GAME 8 — FLAPPY BOX */
+let flappyCanvas=document.getElementById("flappyCanvas");
+let fCtx=flappyCanvas.getContext("2d");
+let fBox={x:50,y:200,width:20,height:20,vel:0};
+let fPipes=[];
+let fScore=0;
+let fInterval=setInterval(updateFlappy,20);
+document.addEventListener("keydown",()=>{fBox.vel=-5;});
+function updateFlappy(){
+  fBox.vel+=0.3;
+  fBox.y+=fBox.vel;
+  fPipes=fPipes.map(p=>{p.x-=2; return p;}).filter(p=>p.x+p.width>0);
+  if(Math.random()<0.02) fPipes.push({x:300, y:Math.random()*200+50, width:20, height:100});
+  fScore++;
+  fCtx.fillStyle="#000"; fCtx.fillRect(0,0,300,400);
+  fCtx.fillStyle="#0f0"; fCtx.fillRect(fBox.x,fBox.y,fBox.width,fBox.height);
+  fCtx.fillStyle="#f00"; fPipes.forEach(p=>fCtx.fillRect(p.x,p.y,p.width,p.height));
+  document.getElementById("flappy-score").innerText="Score: "+fScore;
+}
+
+/* GAME 9 — DODGE BLOCKS */
+let dodgeCanvas=document.getElementById("dodgeCanvas");
+let dCtx=dodgeCanvas.getContext("2d");
+let dPlayer={x:140,y:350,width:20,height:20};
+let dBlocks=[];
+let dScore=0;
+document.addEventListener("keydown",e=>{if(e.key==="ArrowLeft") dPlayer.x-=20;if(e.key==="ArrowRight") dPlayer.x+=20;});
+setInterval(updateDodge,50);
+function updateDodge(){
+  dBlocks=dBlocks.map(b=>{b.y+=5; return b;}).filter(b=>b.y<400);
+  if(Math.random()<0.05) dBlocks.push({x:Math.random()*280,y:0,width:20,height:20});
+  dBlocks.forEach(b=>{if(b.x<dPlayer.x+dPlayer.width && b.x+b.width>dPlayer.x && b.y<dPlayer.y+dPlayer.height && b.y+b.height>dPlayer.y){alert("Game Over!"); dScore=0; dBlocks=[];}});
+  dScore++;
+  dCtx.fillStyle="#000"; dCtx.fillRect(0,0,300,400);
+  dCtx.fillStyle="#0f0"; dCtx.fillRect(dPlayer.x,dPlayer.y,dPlayer.width,dPlayer.height);
+  dCtx.fillStyle="#f00"; dBlocks.forEach(b=>dCtx.fillRect(b.x,b.y,b.width,b.height));
+  document.getElementById("dodge-score").innerText="Score: "+dScore;
+}
+
+/* GAME 10 — PONG */
+let pongCanvas=document.getElementById("pongCanvas");
+let pCtx=pongCanvas.getContext("2d");
+let pBall={x:200,y:150,dx:3,dy:3,r:10};
+let pPaddle={x:150,y:280,width:100,height:10};
+let pScore=0;
+document.addEventListener("mousemove",e=>{
+  let rect=pongCanvas.getBoundingClientRect();
+  pPaddle.x=e.clientX-rect.left-pPaddle.width/2;
+});
+setInterval(updatePong,20);
+function updatePong(){
+  pBall.x+=pBall.dx; pBall.y+=pBall.dy;
+  if(pBall.x<0 || pBall.x>400) pBall.dx*=-1;
+  if(pBall.y<0) pBall.dy*=-1;
+  if(pBall.y+pBall.r>pPaddle.y && pBall.x>pPaddle.x && pBall.x<pPaddle.x+pPaddle.width){ pBall.dy*=-1; pScore++; }
+  if(pBall.y>300){ alert("Game Over!"); pScore=0; pBall={x:200,y:150,dx:3,dy:3,r:10}; }
+  pCtx.fillStyle="#000"; pCtx.fillRect(0,0,400,300);
+  pCtx.fillStyle="#fff"; pCtx.beginPath(); pCtx.arc(pBall.x,pBall.y,pBall.r,0,Math.PI*2); pCtx.fill();
+  pCtx.fillStyle="#0f0"; pCtx.fillRect(pPaddle.x,pPaddle.y,pPaddle.width,pPaddle.height);
+  document.getElementById("pong-score").innerText="Score: "+pScore;
+}
+</script>
+</body>
+</html>
