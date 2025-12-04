@@ -2,22 +2,46 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Simple Chat</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chat med Brugernavn</title>
 <style>
     body {
         font-family: Arial;
         margin: 0;
-        background: #f2f2f2;
+        background: #f5f5f5;
         display: flex;
         flex-direction: column;
         height: 100vh;
     }
+
+    /* Username box */
+    #username-box {
+        background: #ddd;
+        padding: 15px;
+        border-bottom: 1px solid #bbb;
+        display: flex;
+        gap: 10px;
+    }
+    #username {
+        flex: 1;
+        padding: 8px;
+        border-radius: 5px;
+        border: none;
+    }
+    #save-username {
+        padding: 8px 12px;
+        background: #2196f3;
+        border: none;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
     #chat-box {
         flex: 1;
         overflow-y: auto;
         padding: 10px;
         background: #fff;
-        border-bottom: 1px solid #ccc;
     }
     .msg {
         padding: 8px;
@@ -27,6 +51,7 @@
         max-width: 80%;
         word-wrap: break-word;
     }
+
     #input-area {
         display: flex;
         padding: 10px;
@@ -37,6 +62,7 @@
         padding: 8px;
         border: none;
         border-radius: 5px;
+        font-size: 16px;
     }
     #send {
         padding: 8px 12px;
@@ -46,32 +72,51 @@
         background: #4caf50;
         color: white;
         cursor: pointer;
+        font-size: 16px;
     }
 </style>
 </head>
 <body>
 
+<!-- username area -->
+<div id="username-box">
+    <input type="text" id="username" placeholder="Skriv dit brugernavn...">
+    <button id="save-username">Gem</button>
+</div>
+
+<!-- chat area -->
 <div id="chat-box"></div>
 
+<!-- input area -->
 <div id="input-area">
-    <input type="text" id="msg" placeholder="Skriv besked...">
-    <button id="send">Send</button>
+    <input type="text" id="msg" placeholder="Skriv besked..." disabled>
+    <button id="send" disabled>Send</button>
 </div>
 
 <script>
     let chatBox = document.getElementById("chat-box");
     let msgInput = document.getElementById("msg");
     let sendBtn = document.getElementById("send");
+    let usernameInput = document.getElementById("username");
+    let saveUsernameBtn = document.getElementById("save-username");
 
-    // Load stored messages
+    // Load username if saved
+    let username = localStorage.getItem("chatUsername") || "";
+
+    if (username) {
+        usernameInput.value = username;
+        enableChat();
+    }
+
+    // Load messages
     let messages = JSON.parse(localStorage.getItem("simpleChat")) || [];
 
     function updateChat() {
         chatBox.innerHTML = "";
-        messages.forEach(txt => {
+        messages.forEach(msg => {
             let div = document.createElement("div");
             div.className = "msg";
-            div.textContent = txt;
+            div.textContent = msg.user + ": " + msg.text;
             chatBox.appendChild(div);
         });
         chatBox.scrollTop = chatBox.scrollHeight;
@@ -79,10 +124,28 @@
 
     updateChat();
 
+    function enableChat() {
+        msgInput.disabled = false;
+        sendBtn.disabled = false;
+    }
+
+    // Save username
+    saveUsernameBtn.onclick = () => {
+        let name = usernameInput.value.trim();
+        if (!name) return;
+        username = name;
+        localStorage.setItem("chatUsername", username);
+        enableChat();
+    };
+
+    // Send message
     sendBtn.onclick = () => {
+        if (!username) return alert("Vælg et brugernavn først!");
+
         let txt = msgInput.value.trim();
         if (!txt) return;
-        messages.push(txt);
+
+        messages.push({ user: username, text: txt });
         localStorage.setItem("simpleChat", JSON.stringify(messages));
         msgInput.value = "";
         updateChat();
