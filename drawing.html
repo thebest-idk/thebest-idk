@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Drawing App</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+    background: #111;
+    color: white;
+    text-align: center;
+    font-family: Arial;
+    padding: 20px;
+}
+canvas {
+    background: #fff;
+    border: 2px solid #333;
+    touch-action: none;
+}
+.controls {
+    margin-top: 10px;
+}
+button, input {
+    padding: 10px;
+    margin: 5px;
+    border-radius: 5px;
+}
+</style>
+</head>
+
+<body>
+<h1>🎨 Drawing App</h1>
+
+<canvas id="canvas" width="300" height="300"></canvas>
+
+<div class="controls">
+    <input type="color" id="color" value="#000000">
+    <input type="range" id="size" min="2" max="30" value="5">
+    <button onclick="eraser()">Eraser</button>
+    <button onclick="download()">Save</button>
+    <button onclick="clearCanvas()">Clear</button>
+</div>
+
+<script>
+let canvas = document.getElementById("canvas");
+let ctx = canvas.getContext("2d");
+
+let painting = false;
+
+function start(e) {
+    painting = true;
+    draw(e);
+}
+function end() {
+    painting = false;
+    ctx.beginPath();
+}
+function draw(e) {
+    if (!painting) return;
+
+    let rect = canvas.getBoundingClientRect();
+    let x = (e.clientX || e.touches[0].clientX) - rect.left;
+    let y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+    ctx.lineWidth = document.getElementById("size").value;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = document.getElementById("color").value;
+
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+}
+
+function eraser() {
+    document.getElementById("color").value = "#ffffff";
+}
+
+function clearCanvas() {
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+function download() {
+    let link = document.createElement("a");
+    link.download = "drawing.png";
+    link.href = canvas.toDataURL();
+    link.click();
+}
+
+canvas.addEventListener("mousedown", start);
+canvas.addEventListener("mouseup", end);
+canvas.addEventListener("mousemove", draw);
+
+canvas.addEventListener("touchstart", start);
+canvas.addEventListener("touchend", end);
+canvas.addEventListener("touchmove", draw);
+
+clearCanvas();
+</script>
+</body>
+</html>
