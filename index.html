@@ -1,164 +1,111 @@
 <!DOCTYPE html>
 <html lang="da">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini-OS</title>
-<style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-    html, body { width: 100%; height: 100%; overflow: hidden; }
-    body { background: #1e1e2f; display: flex; flex-direction: column; }
-    #dock { position: fixed; bottom: 0; width: 100%; height: 60px; background: rgba(30,30,30,0.9); display: flex; justify-content: center; align-items: center; }
-    .dock-btn { width: 50px; height: 50px; margin: 0 10px; border-radius: 10px; background: #3333ff; display: flex; justify-content: center; align-items: center; color: white; cursor: pointer; transition: transform 0.2s; }
-    .dock-btn:hover { transform: scale(1.2); }
-    .window { position: absolute; background: rgba(40,40,60,0.95); border-radius: 10px; box-shadow: 0 0 10px black; overflow: hidden; display: none; flex-direction: column; resize: both; min-width: 200px; min-height: 200px; }
-    .window-header { background: #4444aa; padding: 5px; cursor: move; display: flex; justify-content: space-between; align-items: center; color: white; }
-    .window-content { flex: 1; padding: 10px; overflow: auto; }
-    .close-btn { cursor: pointer; }
-    /* AI Chatbot */
-    #chatbot-messages { height: 200px; background: #222; color: #fff; padding: 5px; overflow-y: auto; border-radius: 5px; margin-bottom: 5px; }
-    #chatbot-input { width: 100%; padding: 5px; border-radius: 5px; border: none; }
-    /* Neon Tegning */
-    #canvas { width: 100%; height: 100%; background: #111; touch-action: none; }
-    #controls { margin-top: 5px; display: flex; justify-content: space-between; }
-    #controls button, #controls input[type=color], #controls input[type=range] { margin-right: 5px; }
-    /* Klassechat */
-    #classchat-messages { height: 200px; background: #222; color: #fff; padding: 5px; overflow-y: auto; border-radius: 5px; margin-bottom: 5px; }
-    #classchat-input { width: 100%; padding: 5px; border-radius: 5px; border: none; }
-</style>
+  <meta charset="UTF-8">
+  <title>Mini Chat</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      margin: 0;
+      background: #1e1e2f;
+      color: #fff;
+    }
+    #chat-box {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      border-bottom: 2px solid #555;
+    }
+    #chat-box div {
+      margin: 5px 0;
+      padding: 5px 10px;
+      border-radius: 10px;
+      max-width: 70%;
+      word-wrap: break-word;
+    }
+    .user {
+      background: #4caf50;
+      align-self: flex-end;
+    }
+    .system {
+      background: #555;
+      align-self: flex-start;
+    }
+    #input-area {
+      display: flex;
+      padding: 10px;
+      background: #2a2a3f;
+    }
+    #msg {
+      flex: 1;
+      padding: 8px;
+      border-radius: 5px;
+      border: none;
+    }
+    #send {
+      padding: 8px 15px;
+      margin-left: 5px;
+      border: none;
+      border-radius: 5px;
+      background: #4caf50;
+      color: #fff;
+      cursor: pointer;
+    }
+    #send:hover {
+      background: #45a049;
+    }
+  </style>
 </head>
 <body>
+  <div id="chat-box"></div>
+  <div id="input-area">
+    <input type="text" id="msg" placeholder="Skriv en besked...">
+    <button id="send">Send</button>
+  </div>
 
-<!-- Dock -->
-<div id="dock">
-    <div class="dock-btn" onclick="openWindow('aiWindow')">AI Chat</div>
-    <div class="dock-btn" onclick="openWindow('paintWindow')">Tegne-app</div>
-    <div class="dock-btn" onclick="openWindow('chatWindow')">Klassechat</div>
-</div>
+  <script>
+    const chatBox = document.getElementById('chat-box');
+    const msgInput = document.getElementById('msg');
+    const sendBtn = document.getElementById('send');
 
-<!-- AI Chat Window -->
-<div id="aiWindow" class="window" style="width:300px;height:350px;top:50px;left:50px;">
-    <div class="window-header">AI Chat <span class="close-btn" onclick="closeWindow('aiWindow')">✖</span></div>
-    <div class="window-content">
-        <div id="chatbot-messages"></div>
-        <input type="text" id="chatbot-input" placeholder="Skriv besked..." onkeydown="if(event.key==='Enter'){sendMessage();}">
-    </div>
-</div>
+    // Load messages from localStorage
+    let messages = JSON.parse(localStorage.getItem('miniChatMessages')) || [];
 
-<!-- Neon Tegne-app Window -->
-<div id="paintWindow" class="window" style="width:400px;height:400px;top:100px;left:100px;">
-    <div class="window-header">Tegne-app <span class="close-btn" onclick="closeWindow('paintWindow')">✖</span></div>
-    <div class="window-content">
-        <canvas id="canvas"></canvas>
-        <div id="controls">
-            <input type="color" id="colorPicker" value="#00ffff">
-            <input type="range" id="sizePicker" min="1" max="20" value="5">
-            <button onclick="clearCanvas()">Viskelæder</button>
-            <button onclick="saveCanvas()">Gem</button>
-        </div>
-    </div>
-</div>
-
-<!-- Klassechat Window -->
-<div id="chatWindow" class="window" style="width:300px;height:350px;top:150px;left:150px;">
-    <div class="window-header">Klassechat <span class="close-btn" onclick="closeWindow('chatWindow')">✖</span></div>
-    <div class="window-content">
-        <div id="classchat-messages"></div>
-        <input type="text" id="classchat-input" placeholder="Skriv besked..." onkeydown="if(event.key==='Enter'){sendClassMessage();}">
-    </div>
-</div>
-
-<script>
-/* Dragging */
-function makeDraggable(el){
-    let header = el.querySelector(".window-header");
-    let pos1=0,pos2=0,pos3=0,pos4=0;
-    header.onpointerdown = dragMouseDown;
-    function dragMouseDown(e){
-        e.preventDefault();
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        document.onpointermove = elementDrag;
-        document.onpointerup = closeDragElement;
+    function renderMessages() {
+      chatBox.innerHTML = '';
+      messages.forEach(m => {
+        const div = document.createElement('div');
+        div.className = m.type;
+        div.textContent = m.text;
+        chatBox.appendChild(div);
+      });
+      chatBox.scrollTop = chatBox.scrollHeight;
     }
-    function elementDrag(e){
-        pos1 = pos3 - e.clientX;
-        pos2 = pos4 - e.clientY;
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        el.style.top = (el.offsetTop - pos2) + "px";
-        el.style.left = (el.offsetLeft - pos1) + "px";
+
+    renderMessages();
+
+    function addMessage(text, type='user') {
+      messages.push({text, type});
+      localStorage.setItem('miniChatMessages', JSON.stringify(messages));
+      renderMessages();
     }
-    function closeDragElement(){ document.onpointermove=null; document.onpointerup=null; }
-}
-document.querySelectorAll('.window').forEach(makeDraggable);
 
-/* Open/Close windows */
-function openWindow(id){ document.getElementById(id).style.display='flex'; resizeCanvas(); }
-function closeWindow(id){ document.getElementById(id).style.display='none'; }
-
-/* AI Chatbot */
-function sendMessage(){
-    let input = document.getElementById("chatbot-input");
-    let msg = input.value.trim(); if(!msg) return;
-    let msgs = document.getElementById("chatbot-messages");
-    msgs.innerHTML += `<div>Du: ${msg}</div>`;
-    input.value='';
-    setTimeout(()=>{ msgs.innerHTML += `<div>AI: ${simpleAI(msg)}</div>`; msgs.scrollTop=msgs.scrollHeight; },200);
-}
-function simpleAI(text){
-    text = text.toLowerCase();
-    if(text.includes("hej")) return "Hej! Hvordan går det?";
-    if(text.includes("hvordan")) return "Alt er fint, tak!";
-    return "Hmm, interessant...";
-}
-
-/* Klassechat */
-let classUser = localStorage.getItem("classUser");
-if(!classUser){ classUser = prompt("Skriv dit navn til klassechat:"); localStorage.setItem("classUser",classUser);}
-function sendClassMessage(){
-    let input = document.getElementById("classchat-input");
-    let msg = input.value.trim(); if(!msg) return;
-    let msgs = document.getElementById("classchat-messages");
-    msgs.innerHTML += `<div><b>${classUser}:</b> ${msg}</div>`;
-    input.value=''; msgs.scrollTop=msgs.scrollHeight;
-}
-
-/* Neon Tegning */
-let canvas = document.getElementById("canvas");
-let ctx = canvas.getContext("2d");
-let painting=false;
-function resizeCanvas(){ canvas.width=canvas.parentElement.clientWidth; canvas.height=canvas.parentElement.clientHeight-50; }
-window.addEventListener('resize',resizeCanvas);
-canvas.addEventListener('pointerdown',()=>{painting=true});
-canvas.addEventListener('pointerup',()=>{painting=false; ctx.beginPath();});
-canvas.addEventListener('pointermove',(e)=>{
-    if(!painting) return;
-    ctx.lineWidth=document.getElementById("sizePicker").value;
-    ctx.lineCap='round';
-    ctx.strokeStyle=document.getElementById("colorPicker").value;
-    ctx.shadowColor=document.getElementById("colorPicker").value;
-    ctx.shadowBlur=10;
-    ctx.lineTo(e.offsetX,e.offsetY);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(e.offsetX,e.offsetY);
-});
-function clearCanvas(){ ctx.clearRect(0,0,canvas.width,canvas.height); }
-function saveCanvas(){ let link=document.createElement('a'); link.download="tegn.png"; link.href=canvas.toDataURL(); link.click(); }
-
-/* Auto resize windows on small screens */
-function adjustWindows(){
-    document.querySelectorAll('.window').forEach(w=>{
-        let wW = window.innerWidth*0.9;
-        let wH = window.innerHeight*0.8;
-        if(parseInt(w.style.width) > wW) w.style.width=wW+"px";
-        if(parseInt(w.style.height) > wH) w.style.height=wH+"px";
+    sendBtn.addEventListener('click', () => {
+      const text = msgInput.value.trim();
+      if(text){
+        addMessage(text, 'user');
+        msgInput.value = '';
+        // Optional: auto-reply
+        setTimeout(()=> addMessage("System: Tak for beskeden!", 'system'), 500);
+      }
     });
-}
-window.addEventListener('resize',adjustWindows);
-adjustWindows();
-</script>
 
+    msgInput.addEventListener('keypress', (e) => {
+      if(e.key === 'Enter') sendBtn.click();
+    });
+  </script>
 </body>
 </html>
