@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drum Kit</title>
+<style>
+body { background:#111; color:white; text-align:center; font-family:sans-serif; }
+.drum { display:inline-block; width:80px; height:80px; margin:10px; border-radius:10px; background:#444; line-height:80px; cursor:pointer; user-select:none; }
+h1 { margin:20px 0; }
+</style>
+</head>
+<body>
+<h1>🥁 Drum Kit</h1>
+<div class="drum" onclick="play('kick')">Kick</div>
+<div class="drum" onclick="play('snare')">Snare</div>
+<div class="drum" onclick="play('hihat')">HiHat</div>
+
+<script>
+function play(name){
+    let audio = new Audio(`https://raw.githubusercontent.com/thebest-idk/sounds/main/drum_${name}.mp3`);
+    audio.play();
+}
+</script>
+</body>
+</html>
