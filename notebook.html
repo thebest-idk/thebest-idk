@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Notebook App</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: white;
+    padding: 20px;
+    margin: 0;
+}
+h1 { text-align: center; }
+
+#notes-list {
+    margin-top: 20px;
+}
+.note-item {
+    background: #222;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+textarea {
+    width: 100%;
+    height: 250px;
+    background: #222;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    resize: none;
+    margin-top: 10px;
+}
+
+button {
+    padding: 10px 20px;
+    border: none;
+    background: #4caf50;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 5px;
+}
+</style>
+</head>
+
+<body>
+<h1>📘 Notebook App</h1>
+
+<button onclick="newNote()">New Note</button>
+
+<div id="notes-list"></div>
+
+<textarea id="editor" placeholder="Select or create a note..." oninput="saveNote()"></textarea>
+
+<script>
+let notes = JSON.parse(localStorage.getItem("notes")) || {};
+let currentNote = null;
+
+function renderNotes() {
+    let list = document.getElementById("notes-list");
+    list.innerHTML = "";
+
+    for (let title in notes) {
+        let div = document.createElement("div");
+        div.className = "note-item";
+        div.textContent = title;
+        div.onclick = () => openNote(title);
+        list.appendChild(div);
+    }
+}
+
+function newNote() {
+    let name = prompt("Name of note:");
+    if (!name) return;
+    notes[name] = "";
+    currentNote = name;
+    document.getElementById("editor").value = "";
+    saveAll();
+    renderNotes();
+}
+
+function openNote(name) {
+    currentNote = name;
+    document.getElementById("editor").value = notes[name];
+}
+
+function saveNote() {
+    if (!currentNote) return;
+    notes[currentNote] = document.getElementById("editor").value;
+    saveAll();
+}
+
+function saveAll() {
+    localStorage.setItem("notes", JSON.stringify(notes));
+}
+
+renderNotes();
+</script>
+</body>
+</html>
