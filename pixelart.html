@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Pixel Art Creator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+    background: #111;
+    color: white;
+    text-align: center;
+    font-family: Arial;
+}
+.grid {
+    margin: 20px auto;
+    display: grid;
+    gap: 1px;
+    background: #333;
+}
+.pixel {
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+<h1>🟦 Pixel Art Creator</h1>
+
+<input type="color" id="color" value="#000000">
+<button onclick="clearGrid()">Clear</button>
+<button onclick="download()">Save PNG</button>
+
+<div id="grid" class="grid"></div>
+
+<script>
+let size = 16;
+let grid = document.getElementById("grid");
+
+grid.style.gridTemplateColumns = `repeat(${size}, 20px)`;
+
+for (let i = 0; i < size * size; i++) {
+    let px = document.createElement("div");
+    px.className = "pixel";
+    px.onclick = () => px.style.background = document.getElementById("color").value;
+    grid.appendChild(px);
+}
+
+function clearGrid() {
+    document.querySelectorAll(".pixel").forEach(p => p.style.background = "#fff");
+}
+
+function download() {
+    let canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    let ctx = canvas.getContext("2d");
+
+    let pixels = document.querySelectorAll(".pixel");
+    pixels.forEach((p, i) => {
+        let x = i % size;
+        let y = Math.floor(i / size);
+        ctx.fillStyle = p.style.background;
+        ctx.fillRect(x, y, 1, 1);
+    });
+
+    let link = document.createElement("a");
+    link.download = "pixelart.png";
+    link.href = canvas.toDataURL();
+    link.click();
+}
+</script>
+</body>
+</html>
