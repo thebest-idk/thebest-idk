@@ -49,85 +49,147 @@ function showGame(id){
 }
 
 /* GAME 4 — SNAKE */
-let snakeCanvas = document.getElementById("snakeCanvas");
-let ctx = snakeCanvas.getContext("2d");
-let snake = [{x:150,y:150}];
-let dir = {x:20,y:0};
-let apple = {x:100,y:100};
-let snakeScore=0;
-let snakeInterval;
-
-document.addEventListener("keydown", e=>{
-    if(e.key==="ArrowUp") dir={x:0,y:-20};
-    if(e.key==="ArrowDown") dir={x:0,y:20};
-    if(e.key==="ArrowLeft") dir={x:-20,y:0};
-    if(e.key==="ArrowRight") dir={x:20,y:0};
-});
+let snakeCanvas=document.getElementById("snakeCanvas");
+let ctx=snakeCanvas.getContext("2d");
+let snake, dir, apple, snakeScore, snakeInterval;
 
 function startSnake(){
-    snake=[{x:150,y:150}]; dir={x:20,y:0}; apple={x:100,y:100}; snakeScore=0;
+    snake=[{x:150,y:150}];
+    dir={x:20,y:0};
+    apple={x:100,y:100};
+    snakeScore=0;
     document.getElementById("snake-score").innerText="Score: 0";
+
     clearInterval(snakeInterval);
-    snakeInterval=setInterval(moveSnake,200);
+    snakeInterval=setInterval(moveSnake,150);
 }
 
 function moveSnake(){
     let head={x:snake[0].x+dir.x, y:snake[0].y+dir.y};
-    if(head.x<0||head.y<0||head.x>=300||head.y>=300 || snake.some(s=>s.x===head.x && s.y===head.y)){ clearInterval(snakeInterval); alert("Game Over!"); return;}
+
+    // Game Over
+    if(head.x<0 || head.y<0 || head.x>=300 || head.y>=300 || snake.some(s=>s.x===head.x && s.y===head.y)){
+        alert("Game Over! Score: "+snakeScore);
+        startSnake();
+        return;
+    }
+
     snake.unshift(head);
-    if(head.x===apple.x && head.y===apple.y){ snakeScore++; document.getElementById("snake-score").innerText="Score: "+snakeScore; placeApple(); }
-    else{ snake.pop(); }
+
+    if(head.x===apple.x && head.y===apple.y){
+        snakeScore++;
+        document.getElementById("snake-score").innerText="Score: "+snakeScore;
+        placeApple();
+    } else {
+        snake.pop();
+    }
+
     drawSnake();
 }
 
 function drawSnake(){
-    ctx.fillStyle="#000"; ctx.fillRect(0,0,300,300);
-    ctx.fillStyle="#0f0"; snake.forEach(s=>ctx.fillRect(s.x,s.y,20,20));
-    ctx.fillStyle="#f00"; ctx.fillRect(apple.x,apple.y,20,20);
+    ctx.fillStyle="#000";
+    ctx.fillRect(0,0,300,300);
+
+    ctx.fillStyle="#0f0";
+    snake.forEach(s=>ctx.fillRect(s.x,s.y,20,20));
+
+    ctx.fillStyle="#f00";
+    ctx.fillRect(apple.x,apple.y,20,20);
 }
 
-function placeApple(){ apple={x:Math.floor(Math.random()*15)*20,y:Math.floor(Math.random()*15)*20}; }
+function placeApple(){
+    apple={x:Math.floor(Math.random()*15)*20, y:Math.floor(Math.random()*15)*20};
+}
+
+document.addEventListener("keydown",e=>{
+    if(e.key==="ArrowUp" && dir.y===0) dir={x:0,y:-20};
+    if(e.key==="ArrowDown" && dir.y===0) dir={x:0,y:20};
+    if(e.key==="ArrowLeft" && dir.x===0) dir={x:-20,y:0};
+    if(e.key==="ArrowRight" && dir.x===0) dir={x:20,y:0};
+});
 
 startSnake();
 
 /* GAME 5 — MEMORY MATCH */
-let memoryValues=[],memoryCards=[];
+let memoryValues=[], memoryFirst=null, memorySecond=null, memoryMatches=0;
+
 function startMemory(){
   const board=document.getElementById("memory-board");
   board.innerHTML="";
   memoryValues=[1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8];
   memoryValues.sort(()=>Math.random()-0.5);
-  memoryCards=[];
-  for(let i=0;i<16;i++){
-    let div=document.createElement("div");
-    div.style.width="60px"; div.style.height="60px"; div.style.background="#444"; div.style.display="flex"; div.style.alignItems="center"; div.style.justifyContent="center"; div.style.fontSize="24px"; div.style.cursor="pointer";
-    div.dataset.value=memoryValues[i];
-    div.addEventListener("click",memoryFlip);
-    board.appendChild(div);
-    memoryCards.push(div);
-  }
-  document.getElementById("memory-result").innerText="";
-  memoryFirst=null; memorySecond=null; memoryMatches=0;
-}
-let memoryFirst=null, memorySecond=null, memoryMatches=0;
+  memoryMatches=0;
 
-function memoryFlip(){
-  if(this.textContent!=="") return;
-  this.textContent=this.dataset.value;
-  if(!memoryFirst) memoryFirst=this;
-  else{ memorySecond=this;
-        if(memoryFirst.dataset.value===memorySecond.dataset.value){ memoryMatches++; memoryFirst=null; memorySecond=null; if(memoryMatches===8) document.getElementById("memory-result").innerText="Du vandt!"; }
-        else{ setTimeout(()=>{memoryFirst.textContent=""; memorySecond.textContent=""; memoryFirst=null; memorySecond=null;},800); }
+  for(let i=0;i<16;i++){
+    let card=document.createElement("div");
+    card.style.width="60px";
+    card.style.height="60px";
+    card.style.background="#444";
+    card.style.display="flex";
+    card.style.alignItems="center";
+    card.style.justifyContent="center";
+    card.style.fontSize="24px";
+    card.style.cursor="pointer";
+    card.dataset.value=memoryValues[i];
+    card.onclick=()=>memoryFlip(card);
+
+    board.appendChild(card);
+  }
+
+  document.getElementById("memory-result").innerText="";
+}
+
+function memoryFlip(card){
+  if(card.textContent!=="") return;
+  card.textContent=card.dataset.value;
+
+  if(!memoryFirst){
+    memoryFirst=card;
+  } else {
+    memorySecond=card;
+    if(memoryFirst.dataset.value===memorySecond.dataset.value){
+        memoryFirst=null;
+        memorySecond=null;
+        memoryMatches++;
+        if(memoryMatches===8){
+            document.getElementById("memory-result").innerText="Du vandt!";
+        }
+    } else {
+        setTimeout(()=>{
+            memoryFirst.textContent="";
+            memorySecond.textContent="";
+            memoryFirst=null;
+            memorySecond=null;
+        },800);
+    }
   }
 }
+
 startMemory();
 
-/* GAME 6 — CLICK SPEED TEST */
+/* GAME 6 — CLICK SPEED */
 let clicks=0, timeLeft=10, clickTimer;
+
 document.getElementById("click-btn").onclick=()=>{
-    if(!clickTimer){ clickTimer=setInterval(()=>{timeLeft--; document.getElementById("click-time").innerText="Tid tilbage: "+timeLeft+"s"; if(timeLeft<=0){clearInterval(clickTimer); clickTimer=null; alert("Din score: "+clicks); clicks=0; timeLeft=10; document.getElementById("click-count").innerText="Klik: 0"; document.getElementById("click-time").innerText="Tid tilbage: 10s";}},1000);}
-    clicks++; document.getElementById("click-count").innerText="Klik: "+clicks;
-}
+    if(!clickTimer){
+        clickTimer=setInterval(()=>{
+            timeLeft--;
+            document.getElementById("click-time").innerText="Tid tilbage: "+timeLeft+"s";
+            if(timeLeft<=0){
+                clearInterval(clickTimer);
+                clickTimer=null;
+                alert("Din score: "+clicks);
+                clicks=0;
+                timeLeft=10;
+                document.getElementById("click-count").innerText="Klik: 0";
+                document.getElementById("click-time").innerText="Tid tilbage: 10s";
+            }
+        },1000);
+    }
+    clicks++;
+    document.getElementById("click-count").innerText="Klik: "+clicks;
+};
 </script>
 </body>
 </html>
