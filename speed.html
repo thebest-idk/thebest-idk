@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audio Speed Controller</title>
+<style>
+body { background:#111; color:white; text-align:center; font-family:sans-serif; }
+input[type=range]{ width:80%; margin:20px; }
+h1 { margin-top:20px; }
+</style>
+</head>
+<body>
+<h1>🎵 Audio Speed Controller</h1>
+<audio id="audio" controls>
+    <source src="https://raw.githubusercontent.com/thebest-idk/sounds/main/sample.mp3" type="audio/mp3">
+    Your browser does not support audio.
+</audio>
+<br>
+<label>Speed: <span id="speed">1.0</span>x</label><br>
+<input type="range" id="range" min="0.5" max="2" step="0.05" value="1">
+<script>
+const audio = document.getElementById('audio');
+const range = document.getElementById('range');
+const speedLabel = document.getElementById('speed');
+
+range.addEventListener('input', ()=>{
+    audio.playbackRate = range.value;
+    speedLabel.textContent = range.value;
+});
+</script>
+</body>
+</html>
