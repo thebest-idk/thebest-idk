@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Game Pack – Part 1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    body {
+        font-family: Arial;
+        background: #111;
+        color: white;
+        margin: 0;
+        padding: 20px;
+        text-align: center;
+    }
+    button {
+        padding: 10px 20px;
+        margin: 5px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        background: #4caf50;
+        color: white;
+        font-size: 18px;
+    }
+    .game-box {
+        display: none;
+        margin-top: 20px;
+        padding: 20px;
+        background: #222;
+        border-radius: 10px;
+    }
+</style>
+</head>
+<body>
+
+<h1>🎮 GAME PACK – PART 1</h1>
+
+<!-- Menu -->
+<button onclick="showGame('tictactoe')">Tic Tac Toe</button>
+<button onclick="showGame('rps')">Sten Saks Papir</button>
+<button onclick="showGame('guess')">Gæt Nummeret</button>
+
+<!-- GAME 1: TIC TAC TOE -->
+<div id="tictactoe" class="game-box">
+    <h2>Tic Tac Toe</h2>
+
+    <button onclick="startTicTacToe('pvp')">Mod Spiller</button>
+    <button onclick="startTicTacToe('cpu')">Mod Computer</button>
+
+    <div id="ttt-board" style="display:grid; grid-template-columns:repeat(3,80px); gap:5px; margin:20px auto; width:260px;"></div>
+    <p id="ttt-status"></p>
+</div>
+
+<!-- GAME 2: ROCK PAPER SCISSORS -->
+<div id="rps" class="game-box">
+    <h2>Sten Saks Papir</h2>
+    <button onclick="playRPS('sten')">🪨 Sten</button>
+    <button onclick="playRPS('saks')">✂️ Saks</button>
+    <button onclick="playRPS('papir')">📄 Papir</button>
+
+    <p id="rps-result" style="margin-top:20px;"></p>
+</div>
+
+<!-- GAME 3: GUESS THE NUMBER -->
+<div id="guess" class="game-box">
+    <h2>Gæt Nummeret</h2>
+    <p>Jeg tænker på et tal mellem 1 og 100</p>
+    <input id="guess-input" type="number" style="padding:10px;">
+    <button onclick="checkGuess()">Gæt</button>
+    <p id="guess-result"></p>
+</div>
+
+<script>
+/* SHOW GAME */
+function showGame(id) {
+    document.querySelectorAll('.game-box').forEach(g => g.style.display = "none");
+    document.getElementById(id).style.display = "block";
+}
+
+/* GAME 1 — TIC TAC TOE */
+let tttBoard = [];
+let tttTurn = "X";
+let tttMode = "pvp";
+
+function startTicTacToe(mode) {
+    tttMode = mode;
+    tttTurn = "X";
+    tttBoard = ["", "", "", "", "", "", "", "", ""];
+    document.getElementById("ttt-status").innerText = "Tur: X";
+
+    let boardHTML = "";
+    for (let i = 0; i < 9; i++) {
+        boardHTML += `<div onclick="tttClick(${i})" style="width:80px;height:80px;background:#333;font-size:50px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:5px;">${tttBoard[i]}</div>`;
+    }
+    document.getElementById("ttt-board").innerHTML = boardHTML;
+}
+
+function tttClick(i) {
+    if (tttBoard[i] !== "") return;
+    tttBoard[i] = tttTurn;
+    updateTTT();
+    if (checkWin(tttTurn)) return endTTT(tttTurn + " vandt!");
+    if (!tttBoard.includes("")) return endTTT("Uafgjort");
+
+    if (tttMode === "cpu" && tttTurn === "X") {
+        tttTurn = "O";
+        setTimeout(cpuMove, 300);
+    } else {
+        tttTurn = tttTurn === "X" ? "O" : "X";
+        document.getElementById("ttt-status").innerText = "Tur: " + tttTurn;
+    }
+}
+
+function updateTTT() {
+    document.querySelectorAll("#ttt-board div").forEach((div, i) => {
+        div.textContent = tttBoard[i];
+    });
+}
+
+function cpuMove() {
+    let empty = tttBoard.map((v,i)=>v==""?i:null).filter(v=>v!==null);
+    let choice = empty[Math.floor(Math.random() * empty.length)];
+    tttBoard[choice] = "O";
+    updateTTT();
+    if (checkWin("O")) return endTTT("Computer vandt!");
+    if (!tttBoard.includes("")) return endTTT("Uafgjort");
+    tttTurn = "X";
+    document.getElementById("ttt-status").innerText = "Tur: X";
+}
+
+function checkWin(p) {
+    const wins = [
+        [0,1,2],[3,4,5],[6,7,8],
+        [0,3,6],[1,4,7],[2,5,8],
+        [0,4,8],[2,4,6]
+    ];
+    return wins.some(w => w.every(i => tttBoard[i] === p));
+}
+
+function endTTT(msg) {
+    document.getElementById("ttt-status").innerText = msg;
+}
+
+/* GAME 2 — ROCK PAPER SCISSORS */
+function playRPS(pick) {
+    const options = ["sten","saks","papir"];
+    const cpu = options[Math.floor(Math.random()*3)];
+
+    let result = "Uafgjort!";
+    if (pick === "sten" && cpu === "saks") result = "Du vandt!";
+    if (pick === "saks" && cpu === "papir") result = "Du vandt!";
+    if (pick === "papir" && cpu === "sten") result = "Du vandt!";
+    if (pick !== cpu && result !== "Du vandt!") result = "Du tabte!";
+
+    document.getElementById("rps-result").innerText =
+        `Du valgte: ${pick}\nComputer valgte: ${cpu}\n${result}`;
+}
+
+/* GAME 3 — GUESS THE NUMBER */
+let secret = Math.floor(Math.random()*100)+1;
+
+function checkGuess() {
+    let g = Number(document.getElementById("guess-input").value);
+    let res = document.getElementById("guess-result");
+
+    if (g === secret) {
+        res.innerText = "Korrekt! Du vandt!";
+        secret = Math.floor(Math.random()*100)+1;
+    } else if (g < secret) {
+        res.innerText = "For lavt!";
+    } else {
+        res.innerText = "For højt!";
+    }
+}
+</script>
+
+</body>
+</html>
