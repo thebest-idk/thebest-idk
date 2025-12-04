@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Piano Keyboard</title>
+<style>
+body { background:#111; color:white; text-align:center; font-family:sans-serif; }
+.key { display:inline-block; width:40px; height:150px; margin:1px; border-radius:5px; cursor:pointer; user-select:none; }
+.white { background:white; color:black; }
+.black { background:black; width:30px; height:100px; margin-left:-15px; margin-right:-15px; position:relative; z-index:1; }
+h1 { margin:20px 0; }
+</style>
+</head>
+<body>
+<h1>🎹 Piano Keyboard</h1>
+<div id="piano"></div>
+
+<script>
+const notes = ['C','D','E','F','G','A','B'];
+const piano = document.getElementById('piano');
+
+notes.forEach(n => {
+    let key = document.createElement('div');
+    key.className = 'key white';
+    key.textContent = n;
+    key.onclick = () => play(n);
+    piano.appendChild(key);
+});
+
+function play(note){
+    let audio = new Audio(`https://raw.githubusercontent.com/thebest-idk/sounds/main/piano_${note}.mp3`);
+    audio.play();
+}
+</script>
+</body>
+</html>
